@@ -23,35 +23,24 @@ import org.example.settings.Settings;
 import java.util.Objects;
 
 public class SnsLambdaHandler implements RequestHandler<SNSEvent, Object> {
-
     private static final Logger LOGGER = LogManager.getLogger(SnsLambdaHandler.class);
-
     private static final String MESSAGE = "Read phones number from Dynamodb";
-
     private static final String PHONE_NUMBER = "phoneNumber";
-
     private static final String TABLE_NAME = "phone_numbers";
-
     private static final String MESSAGE_FUNCTION_FAILED_RESPONSE = "Message is empty or null";
-
     private static final String MESSAGE_FUNCTION_SUCCESS_RESPONSE = "Function executed successfully";
-
     private static final String HASH_KEY_NAME = "Id";
-
     private static final AWSCredentials CREDENTIALS = new BasicAWSCredentials(Settings.getAccessKey(), Settings.getSecretKey());
-
     private static final AmazonDynamoDB amazonDynamoDB = AmazonDynamoDBClientBuilder
             .standard()
             .withRegion(Regions.US_EAST_1)
             .withCredentials(new AWSStaticCredentialsProvider(CREDENTIALS))
             .build();
-
     private static final AmazonS3 amazonS3 = AmazonS3ClientBuilder
             .standard()
             .withCredentials(new AWSStaticCredentialsProvider(CREDENTIALS))
             .withRegion(Regions.US_EAST_1)
             .build();
-
     private static final DynamoDB db = new DynamoDB(amazonDynamoDB);
 
     @Override
