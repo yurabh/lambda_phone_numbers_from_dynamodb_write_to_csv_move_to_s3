@@ -38,7 +38,7 @@ public class SnsLambdaHandler implements RequestHandler<SNSEvent, Object> {
 
     private static final String HASH_KEY_NAME = "Id";
 
-    public static final AWSCredentials CREDENTIALS = new BasicAWSCredentials(Settings.getAccessKey(), Settings.getSecretKey());
+    private static final AWSCredentials CREDENTIALS = new BasicAWSCredentials(Settings.getAccessKey(), Settings.getSecretKey());
 
     private static final AmazonDynamoDB amazonDynamoDB = AmazonDynamoDBClientBuilder
             .standard()
