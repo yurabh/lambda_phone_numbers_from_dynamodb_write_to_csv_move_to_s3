@@ -6,8 +6,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.example</groupId>
-    <artifactId>lambda_phone_numbers_from_dynamodb_write_to_csv_move_to_s3</artifactId>
-    <version>1.1</version>
+    <artifactId>lambda_phone_numbers_from_dynamodb_write_to_s3</artifactId>
+    <version>1.2</version>
     <packaging>jar</packaging>
 
     <properties>

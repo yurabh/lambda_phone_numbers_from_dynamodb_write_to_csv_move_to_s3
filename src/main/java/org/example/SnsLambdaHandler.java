@@ -11,13 +11,17 @@ import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.SNSEvent;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.example.model.PhoneNumber;
 
 import java.util.Objects;
 
+import static org.example.utils.LambdaUtils.BUCKET_NAME;
 import static org.example.utils.LambdaUtils.CREDENTIALS;
+import static org.example.utils.LambdaUtils.KEY;
 
 public class SnsLambdaHandler implements RequestHandler<SNSEvent, Object> {
 
@@ -41,6 +45,12 @@ public class SnsLambdaHandler implements RequestHandler<SNSEvent, Object> {
             .withCredentials(new AWSStaticCredentialsProvider(CREDENTIALS))
             .build();
 
+    private static final AmazonS3 amazonS3 = AmazonS3ClientBuilder
+            .standard()
+            .withCredentials(new AWSStaticCredentialsProvider(CREDENTIALS))
+            .withRegion(Regions.US_EAST_1)
+            .build();
+
     private static final DynamoDB db = new DynamoDB(amazonDynamoDB);
 
     @Override
@@ -51,13 +61,25 @@ public class SnsLambdaHandler implements RequestHandler<SNSEvent, Object> {
             return MESSAGE_FUNCTION_FAILED_RESPONSE;
         } else if (message.equals(MESSAGE)) {
             PhoneNumber phoneNumber = addPhoneNumbers();
-
+            savePhoneNumbersInS3Bucket(phoneNumber);
+            LOGGER.info("Phone numbers wrote to destination bucket");
             return MESSAGE_FUNCTION_SUCCESS_RESPONSE;
         }
+        LOGGER.error(MESSAGE_FUNCTION_FAILED_RESPONSE);
         return MESSAGE_FUNCTION_FAILED_RESPONSE;
     }
 
+    public void savePhoneNumbersInS3Bucket(PhoneNumber phoneNumber) {
+        if (!amazonS3.doesBucketExistV2(BUCKET_NAME)) {
+            LOGGER.info("Create bucket for saving filtered phone numbers");
+            amazonS3.createBucket(BUCKET_NAME);
+        }
+        LOGGER.info("Save filtered phone numbers to s3 destination bucket");
+        amazonS3.putObject(BUCKET_NAME, KEY, phoneNumber.getPhoneNumbers().toString());
+    }
+
     private static PhoneNumber addPhoneNumbers() {
+        LOGGER.info("Add phone numbers to list from dynamodb");
         PhoneNumber phoneNumbers = new PhoneNumber();
         int countItemsInDynamoDb = countItemsInDynamoDb();
         if (countItemsInDynamoDb != 0) {
@@ -72,6 +94,7 @@ public class SnsLambdaHandler implements RequestHandler<SNSEvent, Object> {
     }
 
     private static Integer getPhoneNumber(int key) {
+        LOGGER.info("Try to get phone number from Dynamodb");
         Table table = db.getTable(TABLE_NAME);
         GetItemSpec phoneNumberItemSpec = new GetItemSpec().withPrimaryKey(HASH_KEY_NAME, key);
         Item item = table.getItem(phoneNumberItemSpec);
@@ -86,6 +109,7 @@ public class SnsLambdaHandler implements RequestHandler<SNSEvent, Object> {
     }
 
     private static int countItemsInDynamoDb() {
+        LOGGER.info("Get count records from dynamodb in specific table");
         Long itemCounts = db.getTable(TABLE_NAME).describe().getItemCount();
         return itemCounts.intValue();
     }
