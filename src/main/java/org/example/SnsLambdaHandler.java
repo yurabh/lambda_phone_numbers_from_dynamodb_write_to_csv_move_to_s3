@@ -1,6 +1,8 @@
 package org.example;
 
+import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
@@ -16,12 +18,9 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.example.model.PhoneNumber;
+import org.example.settings.Settings;
 
 import java.util.Objects;
-
-import static org.example.utils.LambdaUtils.BUCKET_NAME;
-import static org.example.utils.LambdaUtils.CREDENTIALS;
-import static org.example.utils.LambdaUtils.KEY;
 
 public class SnsLambdaHandler implements RequestHandler<SNSEvent, Object> {
 
@@ -38,6 +37,8 @@ public class SnsLambdaHandler implements RequestHandler<SNSEvent, Object> {
     private static final String MESSAGE_FUNCTION_SUCCESS_RESPONSE = "Function executed successfully";
 
     private static final String HASH_KEY_NAME = "Id";
+
+    public static final AWSCredentials CREDENTIALS = new BasicAWSCredentials(Settings.getAccessKey(), Settings.getSecretKey());
 
     private static final AmazonDynamoDB amazonDynamoDB = AmazonDynamoDBClientBuilder
             .standard()
@@ -70,12 +71,13 @@ public class SnsLambdaHandler implements RequestHandler<SNSEvent, Object> {
     }
 
     public void savePhoneNumbersInS3Bucket(PhoneNumber phoneNumber) {
-        if (!amazonS3.doesBucketExistV2(BUCKET_NAME)) {
+        String bucketName = Settings.getBucketName();
+        if (!amazonS3.doesBucketExistV2(bucketName)) {
             LOGGER.info("Create bucket for saving filtered phone numbers");
-            amazonS3.createBucket(BUCKET_NAME);
+            amazonS3.createBucket(bucketName);
         }
         LOGGER.info("Save filtered phone numbers to s3 destination bucket");
-        amazonS3.putObject(BUCKET_NAME, KEY, phoneNumber.getPhoneNumbers().toString());
+        amazonS3.putObject(bucketName, Settings.getKey(), phoneNumber.getPhoneNumbers().toString());
     }
 
     private static PhoneNumber addPhoneNumbers() {
