@@ -70,7 +70,7 @@ public class SnsLambdaHandler implements RequestHandler<SNSEvent, Object> {
         return MESSAGE_FUNCTION_FAILED_RESPONSE;
     }
 
-    public void savePhoneNumbersInS3Bucket(PhoneNumber phoneNumber) {
+    private static void savePhoneNumbersInS3Bucket(PhoneNumber phoneNumber) {
         String bucketName = Settings.getBucketName();
         if (!amazonS3.doesBucketExistV2(bucketName)) {
             LOGGER.info("Create bucket for saving filtered phone numbers");
