@@ -3,7 +3,6 @@ package org.example;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
@@ -31,15 +30,16 @@ public class SnsLambdaHandler implements RequestHandler<SNSEvent, Object> {
     private static final String MESSAGE_FUNCTION_SUCCESS_RESPONSE = "Function executed successfully";
     private static final String HASH_KEY_NAME = "Id";
     private static final AWSCredentials CREDENTIALS = new BasicAWSCredentials(Settings.getAccessKey(), Settings.getSecretKey());
+    private static final String REGION = "us-east-1";
     private static final AmazonDynamoDB amazonDynamoDB = AmazonDynamoDBClientBuilder
             .standard()
-            .withRegion(Regions.US_EAST_1)
+            .withRegion(REGION)
             .withCredentials(new AWSStaticCredentialsProvider(CREDENTIALS))
             .build();
     private static final AmazonS3 amazonS3 = AmazonS3ClientBuilder
             .standard()
             .withCredentials(new AWSStaticCredentialsProvider(CREDENTIALS))
-            .withRegion(Regions.US_EAST_1)
+            .withRegion(REGION)
             .build();
     private static final DynamoDB db = new DynamoDB(amazonDynamoDB);
 
