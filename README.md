@@ -1,4 +1,4 @@
-                                     lambda_phone_numbers_from_dynamodb_write_to_s3
+                                      lambda_phone_numbers_from_dynamodb_write_to_s3
 1)About the project.
 
 This is a lambda function that is triggered by an event when message were published in sns topic and this function must be subscribe to this topic.
